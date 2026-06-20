@@ -1,0 +1,478 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Basic Car Racing Game</title>
+    <style>
+      :root {
+        --bg: #101820;
+        --road: #2f343b;
+        --road-edge: #f2c94c;
+        --panel: #ffffff;
+        --ink: #17211b;
+        --accent: #0f766e;
+        --danger: #c2410c;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: grid;
+        place-items: center;
+        background:
+          radial-gradient(circle at top left, rgba(15, 118, 110, 0.35), transparent 34rem),
+          linear-gradient(135deg, #101820, #17212b);
+        color: var(--panel);
+        font-family:
+          Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+          sans-serif;
+      }
+
+      .game-shell {
+        width: min(94vw, 920px);
+        display: grid;
+        grid-template-columns: minmax(280px, 420px) minmax(240px, 1fr);
+        gap: 24px;
+        align-items: center;
+      }
+
+      .game-area {
+        position: relative;
+        width: min(100%, 420px);
+        height: 640px;
+        max-height: 86vh;
+        overflow: hidden;
+        margin: 0 auto;
+        background: var(--road);
+        border: 6px solid #15191f;
+        border-radius: 8px;
+        box-shadow: 0 26px 70px rgba(0, 0, 0, 0.35);
+      }
+
+      .game-area::before,
+      .game-area::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        width: 8px;
+        height: 100%;
+        background: repeating-linear-gradient(
+          to bottom,
+          var(--road-edge) 0 34px,
+          transparent 34px 58px
+        );
+        z-index: 1;
+      }
+
+      .game-area::before {
+        left: 18px;
+      }
+
+      .game-area::after {
+        right: 18px;
+      }
+
+      .lane-line {
+        position: absolute;
+        left: calc(50% - 5px);
+        width: 10px;
+        height: 86px;
+        background: #f7f7f7;
+        border-radius: 999px;
+        opacity: 0.9;
+      }
+
+      .car {
+        position: absolute;
+        width: 58px;
+        height: 104px;
+        border-radius: 16px 16px 12px 12px;
+        z-index: 3;
+      }
+
+      .player {
+        bottom: 26px;
+        left: 181px;
+        background: #1d4ed8;
+        box-shadow: inset 0 -12px 0 rgba(0, 0, 0, 0.2);
+      }
+
+      .enemy {
+        top: -120px;
+        background: var(--danger);
+        box-shadow: inset 0 -12px 0 rgba(0, 0, 0, 0.2);
+      }
+
+      .car::before {
+        content: "";
+        position: absolute;
+        top: 14px;
+        left: 11px;
+        width: 36px;
+        height: 26px;
+        border-radius: 9px 9px 5px 5px;
+        background: rgba(255, 255, 255, 0.72);
+      }
+
+      .car::after {
+        content: "";
+        position: absolute;
+        right: 10px;
+        bottom: 14px;
+        left: 10px;
+        height: 34px;
+        border-radius: 7px;
+        background: rgba(0, 0, 0, 0.18);
+      }
+
+      .hud {
+        display: grid;
+        gap: 18px;
+        align-content: center;
+      }
+
+      .panel {
+        padding: 24px;
+        background: var(--panel);
+        color: var(--ink);
+        border-radius: 8px;
+        box-shadow: 0 18px 50px rgba(0, 0, 0, 0.22);
+      }
+
+      h1 {
+        margin: 0 0 10px;
+        font-size: clamp(2rem, 5vw, 3.7rem);
+        line-height: 1;
+        letter-spacing: 0;
+      }
+
+      p {
+        margin: 0;
+        color: #59645d;
+      }
+
+      .stats {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+      }
+
+      .stat {
+        padding: 16px;
+        background: #edf4f2;
+        border: 1px solid #d4e3df;
+        border-radius: 8px;
+      }
+
+      .stat span {
+        display: block;
+        color: #59645d;
+        font-size: 0.84rem;
+        font-weight: 700;
+      }
+
+      .stat strong {
+        display: block;
+        margin-top: 4px;
+        font-size: 1.8rem;
+      }
+
+      .controls {
+        display: grid;
+        gap: 10px;
+      }
+
+      .key-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      kbd {
+        min-width: 44px;
+        padding: 8px 12px;
+        text-align: center;
+        color: var(--ink);
+        background: #f7f5ef;
+        border: 1px solid #d8d3c8;
+        border-bottom-width: 3px;
+        border-radius: 8px;
+        font-weight: 800;
+      }
+
+      button {
+        min-height: 48px;
+        border: 0;
+        border-radius: 8px;
+        color: white;
+        background: var(--accent);
+        font: inherit;
+        font-weight: 850;
+        cursor: pointer;
+      }
+
+      button:hover {
+        background: #115e59;
+      }
+
+      .message {
+        position: absolute;
+        inset: 0;
+        z-index: 5;
+        display: grid;
+        place-items: center;
+        padding: 28px;
+        text-align: center;
+        background: rgba(16, 24, 32, 0.82);
+      }
+
+      .message-card {
+        width: min(100%, 300px);
+        padding: 24px;
+        background: white;
+        color: var(--ink);
+        border-radius: 8px;
+      }
+
+      .message-card h2 {
+        margin: 0 0 8px;
+        font-size: 1.7rem;
+      }
+
+      .message-card p {
+        margin-bottom: 18px;
+      }
+
+      .hidden {
+        display: none;
+      }
+
+      @media (max-width: 760px) {
+        body {
+          padding: 16px;
+        }
+
+        .game-shell {
+          grid-template-columns: 1fr;
+        }
+
+        .game-area {
+          height: 560px;
+        }
+
+        .hud {
+          order: -1;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="game-shell">
+      <section class="game-area" id="gameArea" aria-label="Car racing game area">
+        <div class="lane-line" style="top: -40px"></div>
+        <div class="lane-line" style="top: 130px"></div>
+        <div class="lane-line" style="top: 300px"></div>
+        <div class="lane-line" style="top: 470px"></div>
+        <div class="car enemy" id="enemyCar"></div>
+        <div class="car player" id="playerCar"></div>
+
+        <div class="message" id="message">
+          <div class="message-card">
+            <h2>Ready?</h2>
+            <p>Use arrow keys or A/D to dodge the traffic.</p>
+            <button type="button" id="startButton">Start Game</button>
+          </div>
+        </div>
+      </section>
+
+      <aside class="hud">
+        <div class="panel">
+          <h1>Car Racing</h1>
+          <p>Dodge the red cars, stay on the road, and keep your score climbing.</p>
+        </div>
+
+        <div class="panel stats" aria-label="Game statistics">
+          <div class="stat">
+            <span>Score</span>
+            <strong id="score">0</strong>
+          </div>
+          <div class="stat">
+            <span>Best</span>
+            <strong id="bestScore">0</strong>
+          </div>
+        </div>
+
+        <div class="panel controls">
+          <p><strong>Controls</strong></p>
+          <div class="key-row" aria-label="Keyboard controls">
+            <kbd>←</kbd>
+            <kbd>→</kbd>
+            <kbd>A</kbd>
+            <kbd>D</kbd>
+          </div>
+          <button type="button" id="restartButton">Restart</button>
+        </div>
+      </aside>
+    </main>
+
+    <script>
+      const gameArea = document.querySelector("#gameArea");
+      const playerCar = document.querySelector("#playerCar");
+      const enemyCar = document.querySelector("#enemyCar");
+      const scoreText = document.querySelector("#score");
+      const bestScoreText = document.querySelector("#bestScore");
+      const message = document.querySelector("#message");
+      const startButton = document.querySelector("#startButton");
+      const restartButton = document.querySelector("#restartButton");
+      const laneLines = document.querySelectorAll(".lane-line");
+
+      const keys = {
+        left: false,
+        right: false,
+      };
+
+      const state = {
+        running: false,
+        score: 0,
+        best: Number(localStorage.getItem("carRacingBestScore") || 0),
+        speed: 5,
+        playerX: 181,
+        enemyX: 80,
+        enemyY: -130,
+      };
+
+      bestScoreText.textContent = state.best;
+
+      function randomEnemyX() {
+        const roadWidth = gameArea.clientWidth;
+        const carWidth = enemyCar.offsetWidth;
+        const padding = 42;
+        return Math.floor(Math.random() * (roadWidth - carWidth - padding * 2)) + padding;
+      }
+
+      function resetGame() {
+        state.running = true;
+        state.score = 0;
+        state.speed = 5;
+        state.playerX = Math.round(gameArea.clientWidth / 2 - playerCar.offsetWidth / 2);
+        state.enemyX = randomEnemyX();
+        state.enemyY = -150;
+        scoreText.textContent = "0";
+        message.classList.add("hidden");
+        updateCars();
+        requestAnimationFrame(gameLoop);
+      }
+
+      function updateCars() {
+        playerCar.style.left = `${state.playerX}px`;
+        enemyCar.style.left = `${state.enemyX}px`;
+        enemyCar.style.top = `${state.enemyY}px`;
+      }
+
+      function moveLaneLines() {
+        laneLines.forEach((line) => {
+          const currentTop = Number.parseInt(line.style.top, 10);
+          const nextTop = currentTop + state.speed;
+          line.style.top = nextTop > gameArea.clientHeight ? "-90px" : `${nextTop}px`;
+        });
+      }
+
+      function isCollision() {
+        const player = playerCar.getBoundingClientRect();
+        const enemy = enemyCar.getBoundingClientRect();
+
+        return !(
+          player.bottom < enemy.top ||
+          player.top > enemy.bottom ||
+          player.right < enemy.left ||
+          player.left > enemy.right
+        );
+      }
+
+      function endGame() {
+        state.running = false;
+        state.best = Math.max(state.best, state.score);
+        localStorage.setItem("carRacingBestScore", String(state.best));
+        bestScoreText.textContent = state.best;
+        message.querySelector("h2").textContent = "Game Over";
+        message.querySelector("p").textContent = `Your score was ${state.score}. Try again.`;
+        startButton.textContent = "Play Again";
+        message.classList.remove("hidden");
+      }
+
+      function gameLoop() {
+        if (!state.running) {
+          return;
+        }
+
+        const roadWidth = gameArea.clientWidth;
+        const carWidth = playerCar.offsetWidth;
+        const leftLimit = 34;
+        const rightLimit = roadWidth - carWidth - 34;
+
+        if (keys.left) {
+          state.playerX -= 7;
+        }
+
+        if (keys.right) {
+          state.playerX += 7;
+        }
+
+        state.playerX = Math.max(leftLimit, Math.min(rightLimit, state.playerX));
+        state.enemyY += state.speed;
+
+        if (state.enemyY > gameArea.clientHeight + 20) {
+          state.enemyY = -130;
+          state.enemyX = randomEnemyX();
+          state.score += 10;
+          state.speed = Math.min(13, state.speed + 0.25);
+          scoreText.textContent = state.score;
+        }
+
+        moveLaneLines();
+        updateCars();
+
+        if (isCollision()) {
+          endGame();
+          return;
+        }
+
+        requestAnimationFrame(gameLoop);
+      }
+
+      function setKey(event, isPressed) {
+        if (event.key === "ArrowLeft" || event.key.toLowerCase() === "a") {
+          keys.left = isPressed;
+        }
+
+        if (event.key === "ArrowRight" || event.key.toLowerCase() === "d") {
+          keys.right = isPressed;
+        }
+      }
+
+      window.addEventListener("keydown", (event) => {
+        setKey(event, true);
+      });
+
+      window.addEventListener("keyup", (event) => {
+        setKey(event, false);
+      });
+
+      startButton.addEventListener("click", resetGame);
+      restartButton.addEventListener("click", resetGame);
+      window.addEventListener("resize", () => {
+        if (!state.running) {
+          state.playerX = Math.round(gameArea.clientWidth / 2 - playerCar.offsetWidth / 2);
+          updateCars();
+        }
+      });
+
+      updateCars();
+    </script>
+  </body>
+</html>
