@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Are You Wise?</title>
+
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        text-align: center;
+        margin: 0;
+        height: 100vh;
+        overflow: hidden;
+        background: #f5f5f5;
+    }
+
+    .container {
+        margin-top: 100px;
+    }
+
+    button {
+        padding: 12px 24px;
+        font-size: 18px;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+    }
+
+    #enterBtn {
+        background-color: #0078d7;
+        color: white;
+    }
+#resetBtn {
+    background-color: #6c757d;
+    color: white;
+    margin-left: 20px;
+}
+
+    #questionArea {
+        display: none;
+    }
+
+    #yesBtn {
+        position: absolute;
+        background-color: #28a745;
+        color: white;
+    }
+
+    #noBtn {
+        background-color: #dc3545;
+        color: white;
+        margin-left: 120px;
+    }
+
+    h1 {
+        color: #333;
+    }
+
+    #message {
+        margin-top: 30px;
+        font-size: 24px;
+        color: #0078d7;
+        font-weight: bold;
+    }
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <button id="enterBtn">Enter at your own risk</button>
+
+    <div id="questionArea">
+        <h1>Are you wise?</h1>
+
+        <button id="yesBtn">Yes</button>
+        <button id="noBtn">No</button>
+        <button id="resetBtn">Reset</button>
+
+        <div id="message"></div>
+    </div>
+
+</div>
+
+<script>
+
+const enterBtn = document.getElementById("enterBtn");
+const questionArea = document.getElementById("questionArea");
+const yesBtn = document.getElementById("yesBtn");
+const noBtn = document.getElementById("noBtn");
+const message = document.getElementById("message");
+
+enterBtn.addEventListener("click", () => {
+    enterBtn.style.display = "none";
+    questionArea.style.display = "block";
+
+    yesBtn.style.left = "45%";
+    yesBtn.style.top = "250px";
+});
+
+function moveYesButton() {
+
+    const maxX = window.innerWidth - yesBtn.offsetWidth - 20;
+    const maxY = window.innerHeight - yesBtn.offsetHeight - 20;
+
+    const randomX = Math.floor(Math.random() * maxX);
+    const randomY = Math.floor(Math.random() * maxY);
+
+    yesBtn.style.left = randomX + "px";
+    yesBtn.style.top = randomY + "px";
+}
+
+yesBtn.addEventListener("mouseover", moveYesButton);
+
+noBtn.addEventListener("click", () => {
+    message.innerHTML = "Progress begins with learning";
+});
+
+resetBtn.addEventListener("click", () => {
+    location.reload();
+});
+
+</script>
+
+</body>
+</html>
