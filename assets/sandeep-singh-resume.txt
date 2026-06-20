@@ -1,0 +1,28 @@
+Sandeep Singh
+Personal Portfolio Resume - Sample Placeholder
+
+Email: sandeep@example.com
+LinkedIn: https://www.linkedin.com/
+GitHub: https://github.com/
+
+SUMMARY
+Software learner and builder focused on web development, automation, QA workflows, and practical digital tools.
+
+SKILLS
+- HTML, CSS, JavaScript
+- Python scripting and automation
+- QA process, test planning, reporting
+- Git, GitHub, static website deployment
+
+SAMPLE PROJECTS
+1. Personal Portfolio Website
+   Responsive website with about, skills, projects, blog, contact links, and resume download.
+
+2. QA Report Generator
+   Python-based concept for turning test results into readable stakeholder reports.
+
+3. Simple Task Tracker
+   Dashboard concept for tracking tasks, priorities, and weekly progress.
+
+NOTE
+Replace this placeholder with your real resume PDF before publishing.
