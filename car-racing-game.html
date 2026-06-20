@@ -22,6 +22,7 @@
       body {
         margin: 0;
         min-height: 100vh;
+        padding: 18px;
         display: grid;
         place-items: center;
         background:
@@ -39,6 +40,33 @@
         grid-template-columns: minmax(280px, 420px) minmax(240px, 1fr);
         gap: 24px;
         align-items: center;
+      }
+
+      .touch-controls {
+        position: fixed;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        z-index: 30;
+        display: none;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 14px;
+        padding: 14px max(16px, env(safe-area-inset-right)) max(14px, env(safe-area-inset-bottom))
+          max(16px, env(safe-area-inset-left));
+        background: rgba(16, 24, 32, 0.82);
+        backdrop-filter: blur(12px);
+      }
+
+      .touch-button {
+        min-height: 64px;
+        border: 1px solid rgba(255, 255, 255, 0.24);
+        border-radius: 8px;
+        color: white;
+        background: #0f766e;
+        font-size: 1.8rem;
+        font-weight: 900;
+        touch-action: none;
+        user-select: none;
       }
 
       .game-area {
@@ -254,7 +282,7 @@
 
       @media (max-width: 760px) {
         body {
-          padding: 16px;
+          padding: 16px 16px 104px;
         }
 
         .game-shell {
@@ -262,11 +290,25 @@
         }
 
         .game-area {
-          height: 560px;
+          height: min(560px, 66vh);
         }
 
         .hud {
           order: -1;
+        }
+
+        .touch-controls {
+          display: grid;
+        }
+      }
+
+      @media (pointer: coarse) {
+        body {
+          padding-bottom: 104px;
+        }
+
+        .touch-controls {
+          display: grid;
         }
       }
     </style>
@@ -320,6 +362,15 @@
       </aside>
     </main>
 
+    <div class="touch-controls" aria-label="Mobile car controls">
+      <button class="touch-button" type="button" data-direction="left" aria-label="Move car left">
+        ←
+      </button>
+      <button class="touch-button" type="button" data-direction="right" aria-label="Move car right">
+        →
+      </button>
+    </div>
+
     <script>
       const gameArea = document.querySelector("#gameArea");
       const playerCar = document.querySelector("#playerCar");
@@ -330,6 +381,7 @@
       const startButton = document.querySelector("#startButton");
       const restartButton = document.querySelector("#restartButton");
       const laneLines = document.querySelectorAll(".lane-line");
+      const touchButtons = document.querySelectorAll(".touch-button");
 
       const keys = {
         left: false,
@@ -455,12 +507,45 @@
         }
       }
 
+      function setTouchDirection(button, isPressed) {
+        const direction = button.dataset.direction;
+
+        if (direction === "left") {
+          keys.left = isPressed;
+        }
+
+        if (direction === "right") {
+          keys.right = isPressed;
+        }
+      }
+
       window.addEventListener("keydown", (event) => {
         setKey(event, true);
       });
 
       window.addEventListener("keyup", (event) => {
         setKey(event, false);
+      });
+
+      touchButtons.forEach((button) => {
+        button.addEventListener("pointerdown", (event) => {
+          event.preventDefault();
+          button.setPointerCapture(event.pointerId);
+          setTouchDirection(button, true);
+        });
+
+        button.addEventListener("pointerup", (event) => {
+          event.preventDefault();
+          setTouchDirection(button, false);
+        });
+
+        button.addEventListener("pointercancel", () => {
+          setTouchDirection(button, false);
+        });
+
+        button.addEventListener("lostpointercapture", () => {
+          setTouchDirection(button, false);
+        });
       });
 
       startButton.addEventListener("click", resetGame);
